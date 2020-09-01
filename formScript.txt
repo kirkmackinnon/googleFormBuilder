@@ -1,0 +1,54 @@
+function onOpen() {
+  var menu = [{name: 'Build Form', functionName: 'setUpForm_'}];
+  SpreadsheetApp.getActive().addMenu('Eval-Builder', menu);
+}
+
+function setUpForm_() {
+  var ss = SpreadsheetApp.getActive();
+  var sheet = ss.getSheetByName('Sheet1');
+  var range = sheet.getDataRange();
+  var values = range.getValues();
+  buildForm_(ss, values);
+  
+}
+
+function buildForm_(ss, values) {
+  var arr = {};
+  for (var i = 1; i < values.length; i++) {
+    var session = values[i];
+    var group = session[0];
+    var email = session[1];
+    
+    if (!arr[group]) {
+      arr[group] = {}
+    }
+    if (!arr[group][email]) {
+      arr[group][email] = [];
+    }
+    
+    arr[group][email].push(session[0]);
+  }
+
+  
+  var form = FormApp.create('Eval Form');
+  form.setDestination(FormApp.DestinationType.SPREADSHEET, ss.getId());
+  
+  form.setCollectEmail(true);
+  
+  test = [];
+  for (var group in arr) {
+    test.push(group);
+    
+  }
+  
+  form.addMultipleChoiceItem().setChoiceValues(test).setTitle("Please select your group")
+  
+  for ( var group in arr) {
+    form.addPageBreakItem().setTitle(group).setGoToPage(FormApp.PageNavigationType.SUBMIT);
+    for ( var email in arr[group])
+      var item = form.addScaleItem().setBounds(1, 5).setLabels("Poor effort", "Appropriate effort").setTitle(email)
+  }
+  
+  
+  
+}
